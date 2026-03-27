@@ -1,0 +1,14 @@
+name = "twitch-overlay-api"
+main = "worker.js"
+compatibility_date = "2025-08-03"
+
+[dev]
+port = 8788
+
+[vars]
+TWITCH_BROADCASTER_LOGIN = "michaellambgelo"
+ALLOWED_ORIGINS = "http://localhost:5173"
+
+[env.production.vars]
+TWITCH_BROADCASTER_LOGIN = "michaellambgelo"
+ALLOWED_ORIGINS = "https://michaellambgelo.github.io"
