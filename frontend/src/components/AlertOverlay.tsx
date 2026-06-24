@@ -2,6 +2,7 @@ import type { AlertEvent } from '../types';
 
 interface Props {
   alert: AlertEvent | null;
+  accent?: string;
 }
 
 const ICON: Record<AlertEvent['kind'], string> = {
@@ -31,14 +32,15 @@ function headline(alert: AlertEvent): string {
   }
 }
 
-export function AlertOverlay({ alert }: Props) {
+export function AlertOverlay({ alert, accent = '#a855f7' }: Props) {
   if (!alert) return null;
 
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-10">
       <div
         key={alert.id}
-        className="animate-alert-in flex flex-col items-center gap-1 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-3 text-white text-center shadow-lg ring-1 ring-white/10"
+        className="animate-alert-in flex flex-col items-center gap-1 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-3 text-white text-center shadow-lg ring-2"
+        style={{ '--tw-ring-color': accent } as React.CSSProperties}
       >
         <span className="text-base font-semibold">
           <span className="mr-2">{ICON[alert.kind]}</span>

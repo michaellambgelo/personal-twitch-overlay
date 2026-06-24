@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ChatMessage, EmoteInstance, ThirdPartyEmoteMap } from '../types';
+import { chatPositionClasses, withAlpha, type ChatPosition } from '../config';
 
 const EMOTE_CDN = 'https://static-cdn.jtvnw.net/emoticons/v2';
 
@@ -54,9 +55,12 @@ function renderMessageContent(text: string, emotes: EmoteInstance[], thirdParty:
 interface Props {
   messages: ChatMessage[];
   thirdPartyEmotes: ThirdPartyEmoteMap;
+  position?: ChatPosition;
+  fontScale?: number;
+  accent?: string;
 }
 
-export function ChatBox({ messages, thirdPartyEmotes }: Props) {
+export function ChatBox({ messages, thirdPartyEmotes, position = 'br', fontScale = 1, accent = '#a855f7' }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,23 +68,25 @@ export function ChatBox({ messages, thirdPartyEmotes }: Props) {
   }, [messages]);
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 max-h-[60vh] flex flex-col-reverse">
+    <div
+      className={`fixed ${chatPositionClasses(position)} w-96 max-h-[60vh] flex flex-col-reverse`}
+      style={{ fontSize: `calc(0.875rem * ${fontScale})` }}
+    >
       <div className="overflow-y-auto space-y-1 p-3 bg-black/40 backdrop-blur-sm rounded-lg">
         {messages.map((msg, i) => {
           const age = messages.length - 1 - i;
           const opacity = age > 40 ? 0.3 : age > 25 ? 0.5 : age > 10 ? 0.7 : 1;
-          const rowClass = [
-            'text-sm leading-relaxed break-words rounded px-1 -mx-1',
-            msg.mentioned ? 'bg-purple-500/25' : '',
-            msg.firstMessage ? 'ring-1 ring-green-400/60' : '',
-          ]
-            .filter(Boolean)
-            .join(' ');
+          const rowStyle: React.CSSProperties = { opacity };
+          if (msg.mentioned) rowStyle.backgroundColor = withAlpha(accent, 0.22);
+          if (msg.firstMessage) rowStyle.boxShadow = `inset 0 0 0 1px ${withAlpha(accent, 0.6)}`;
 
           return (
-            <div key={msg.id} className={rowClass} style={{ opacity }}>
+            <div key={msg.id} className="leading-relaxed break-words rounded px-1 -mx-1" style={rowStyle}>
               {msg.firstMessage && (
-                <span className="text-[10px] uppercase tracking-wide text-green-400 mr-1 align-middle">
+                <span
+                  className="text-[10px] uppercase tracking-wide mr-1 align-middle"
+                  style={{ color: accent }}
+                >
                   first
                 </span>
               )}

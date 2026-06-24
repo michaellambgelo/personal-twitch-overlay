@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type tmi from 'tmi.js';
 import type { ChatMessage, EmoteInstance, BadgeInstance, BadgeMap } from '../types';
 
-const MAX_MESSAGES = 50;
-
 // Common chat bots whose output is noise on an overlay.
 const BOT_USERNAMES = new Set(['nightbot', 'streamelements', 'streamlabs', 'moobot', 'soundalerts']);
 
@@ -38,17 +36,24 @@ function parseBadges(
   return badges;
 }
 
-export function useChat(client: tmi.Client | null, badgeMap: BadgeMap, channel: string) {
+export function useChat(
+  client: tmi.Client | null,
+  badgeMap: BadgeMap,
+  channel: string,
+  maxMessages = 50
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const badgeMapRef = useRef(badgeMap);
   badgeMapRef.current = badgeMap;
   const mentionRef = useRef(`@${channel.toLowerCase()}`);
   mentionRef.current = `@${channel.toLowerCase()}`;
+  const maxRef = useRef(maxMessages);
+  maxRef.current = maxMessages;
 
   const addMessage = useCallback((msg: ChatMessage) => {
     setMessages(prev => {
       const next = [...prev, msg];
-      return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next;
+      return next.length > maxRef.current ? next.slice(-maxRef.current) : next;
     });
   }, []);
 
