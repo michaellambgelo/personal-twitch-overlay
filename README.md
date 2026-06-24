@@ -184,11 +184,16 @@ npx wrangler secret put TWITCH_CLIENT_SECRET
 - **Frontend → GitHub Pages:** auto-deploys on every push to `main` via
   `.github/workflows/deploy.yml` (`npm ci` + `npm run build`, then publishes
   `frontend/dist`). Vite is configured with `base: '/personal-twitch-overlay/'`.
-- **Worker → Cloudflare Workers:** deployed manually:
+- **Worker → Cloudflare Workers:** deployed manually. Production is the
+  `production` environment (`twitch-overlay-api-production`, whose `ALLOWED_ORIGINS`
+  permits the GitHub Pages origin) — deploy it explicitly:
 
   ```bash
-  cd worker && npx wrangler deploy
+  cd worker && npx wrangler deploy --env production
   ```
+
+  Bare `npx wrangler deploy` targets the top-level env (`twitch-overlay-api`,
+  localhost-only CORS) and is only useful for ad-hoc testing.
 
 ## Tech stack
 

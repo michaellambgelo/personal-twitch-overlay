@@ -21,8 +21,9 @@ cd frontend && npm run build
 # Lint frontend
 cd frontend && npm run lint
 
-# Deploy worker
-cd worker && npx wrangler deploy
+# Deploy worker (production env — has the GitHub Pages CORS origin)
+cd worker && npx wrangler deploy --env production
+# (bare `npx wrangler deploy` hits the top-level env: localhost-only CORS, ad-hoc testing only)
 ```
 
 Both must run simultaneously for full functionality. No test framework configured.
