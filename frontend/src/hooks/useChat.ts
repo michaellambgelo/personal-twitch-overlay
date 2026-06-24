@@ -44,6 +44,15 @@ export function useChat(channel: string, badgeMap: BadgeMap) {
     });
   }, []);
 
+  const removeById = useCallback((id: string) => {
+    setMessages(prev => prev.filter(m => m.id !== id));
+  }, []);
+
+  const removeByUser = useCallback((username: string) => {
+    const lower = username.toLowerCase();
+    setMessages(prev => prev.filter(m => m.usernameLower !== lower));
+  }, []);
+
   useEffect(() => {
     const client = new tmi.Client({
       connection: { reconnect: true, secure: true },
@@ -55,9 +64,11 @@ export function useChat(channel: string, badgeMap: BadgeMap) {
 
     client.on('message', (_channel, userstate, text, self) => {
       if (self) return;
+      const username = userstate['display-name'] || userstate.username || 'anonymous';
       addMessage({
         id: userstate.id || crypto.randomUUID(),
-        username: userstate['display-name'] || userstate.username || 'anonymous',
+        username,
+        usernameLower: (userstate.username || username).toLowerCase(),
         color: userstate.color || '#ffffff',
         badges: parseBadges(userstate.badges as Record<string, string> | undefined, badgeMapRef.current),
         emotes: parseEmotes(userstate.emotes as Record<string, string[]> | undefined),
@@ -66,12 +77,21 @@ export function useChat(channel: string, badgeMap: BadgeMap) {
       });
     });
 
+    // Moderation sync — keep the overlay clear of removed content
+    client.on('messagedeleted', (_channel, _username, _deletedMessage, userstate) => {
+      const targetId = userstate['target-msg-id'];
+      if (targetId) removeById(targetId);
+    });
+    client.on('timeout', (_channel, username) => removeByUser(username));
+    client.on('ban', (_channel, username) => removeByUser(username));
+    client.on('clearchat', () => setMessages([]));
+
     client.connect().catch(() => {});
 
     return () => {
       client.disconnect().catch(() => {});
     };
-  }, [channel, addMessage]);
+  }, [channel, addMessage, removeById, removeByUser]);
 
   return { messages, connected };
 }

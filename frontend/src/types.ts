@@ -1,6 +1,7 @@
 export interface ChatMessage {
   id: string;
   username: string;
+  usernameLower: string;
   color: string;
   badges: BadgeInstance[];
   emotes: EmoteInstance[];
