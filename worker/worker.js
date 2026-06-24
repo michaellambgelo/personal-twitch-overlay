@@ -138,6 +138,11 @@ export default {
         return jsonResponse(badgeMap, request, env);
       }
 
+      if (url.pathname === '/userid') {
+        const id = await getBroadcasterId(login, env);
+        return jsonResponse({ id }, request, env);
+      }
+
       if (url.pathname === '/health') {
         return jsonResponse({ ok: true }, request, env);
       }

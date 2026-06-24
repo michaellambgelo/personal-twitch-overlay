@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import tmi from 'tmi.js';
+import type tmi from 'tmi.js';
 import type { ChatMessage, EmoteInstance, BadgeInstance, BadgeMap } from '../types';
 
-const MAX_MESSAGES = 50;
+// Common chat bots whose output is noise on an overlay.
+const BOT_USERNAMES = new Set(['nightbot', 'streamelements', 'streamlabs', 'moobot', 'soundalerts']);
+
+function isBotOrCommand(usernameLower: string, text: string): boolean {
+  return text.startsWith('!') || BOT_USERNAMES.has(usernameLower);
+}
 
 function parseEmotes(emotesTag: Record<string, string[]> | undefined): EmoteInstance[] {
   if (!emotesTag) return [];
@@ -31,47 +36,82 @@ function parseBadges(
   return badges;
 }
 
-export function useChat(channel: string, badgeMap: BadgeMap) {
+export function useChat(
+  client: tmi.Client | null,
+  badgeMap: BadgeMap,
+  channel: string,
+  maxMessages = 50
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [connected, setConnected] = useState(false);
   const badgeMapRef = useRef(badgeMap);
   badgeMapRef.current = badgeMap;
+  const mentionRef = useRef(`@${channel.toLowerCase()}`);
+  mentionRef.current = `@${channel.toLowerCase()}`;
+  const maxRef = useRef(maxMessages);
+  maxRef.current = maxMessages;
 
   const addMessage = useCallback((msg: ChatMessage) => {
     setMessages(prev => {
       const next = [...prev, msg];
-      return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next;
+      return next.length > maxRef.current ? next.slice(-maxRef.current) : next;
     });
   }, []);
 
+  const removeById = useCallback((id: string) => {
+    setMessages(prev => prev.filter(m => m.id !== id));
+  }, []);
+
+  const removeByUser = useCallback((username: string) => {
+    const lower = username.toLowerCase();
+    setMessages(prev => prev.filter(m => m.usernameLower !== lower));
+  }, []);
+
   useEffect(() => {
-    const client = new tmi.Client({
-      connection: { reconnect: true, secure: true },
-      channels: [channel],
-    });
+    if (!client) return;
 
-    client.on('connected', () => setConnected(true));
-    client.on('disconnected', () => setConnected(false));
-
-    client.on('message', (_channel, userstate, text, self) => {
+    const onMessage: tmi.Events['message'] = (_channel, userstate, text, self) => {
       if (self) return;
+      const username = userstate['display-name'] || userstate.username || 'anonymous';
+      const usernameLower = (userstate.username || username).toLowerCase();
+      if (isBotOrCommand(usernameLower, text)) return;
       addMessage({
         id: userstate.id || crypto.randomUUID(),
-        username: userstate['display-name'] || userstate.username || 'anonymous',
+        username,
+        usernameLower,
         color: userstate.color || '#ffffff',
         badges: parseBadges(userstate.badges as Record<string, string> | undefined, badgeMapRef.current),
         emotes: parseEmotes(userstate.emotes as Record<string, string[]> | undefined),
         text,
         timestamp: Date.now(),
+        firstMessage: userstate['first-msg'] === true,
+        isAction: userstate['message-type'] === 'action',
+        mentioned: text.toLowerCase().includes(mentionRef.current),
       });
-    });
+    };
 
-    client.connect().catch(() => {});
+    // Moderation sync — keep the overlay clear of removed content
+    const onDeleted: tmi.Events['messagedeleted'] = (_channel, _username, _deletedMessage, userstate) => {
+      const targetId = userstate['target-msg-id'];
+      if (targetId) removeById(targetId);
+    };
+    const onTimeout: tmi.Events['timeout'] = (_channel, username) => removeByUser(username);
+    const onBan: tmi.Events['ban'] = (_channel, username) => removeByUser(username);
+    const onClear: tmi.Events['clearchat'] = () => setMessages([]);
+
+    client.on('message', onMessage);
+    client.on('messagedeleted', onDeleted);
+    client.on('timeout', onTimeout);
+    client.on('ban', onBan);
+    client.on('clearchat', onClear);
 
     return () => {
-      client.disconnect().catch(() => {});
+      client.removeListener('message', onMessage);
+      client.removeListener('messagedeleted', onDeleted);
+      client.removeListener('timeout', onTimeout);
+      client.removeListener('ban', onBan);
+      client.removeListener('clearchat', onClear);
     };
-  }, [channel, addMessage]);
+  }, [client, addMessage, removeById, removeByUser]);
 
-  return { messages, connected };
+  return { messages };
 }

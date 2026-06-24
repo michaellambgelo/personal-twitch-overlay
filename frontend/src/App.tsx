@@ -1,14 +1,20 @@
 import { useStreamData } from './hooks/useStreamData';
+import { useTmiClient } from './hooks/useTmiClient';
 import { useChat } from './hooks/useChat';
+import { useAlerts } from './hooks/useAlerts';
+import { useThirdPartyEmotes } from './hooks/useThirdPartyEmotes';
 import { ChatBox } from './components/ChatBox';
 import { StreamInfo } from './components/StreamInfo';
+import { AlertOverlay } from './components/AlertOverlay';
 import { Watermark } from './components/Watermark';
+import { parseConfig, type OverlayConfig } from './config';
 
 const DEFAULT_CHANNEL = import.meta.env.VITE_CHANNEL || '';
 
 export function App() {
   const params = new URLSearchParams(window.location.search);
   const channel = params.get('channel') || DEFAULT_CHANNEL;
+  const config = parseConfig(params);
 
   if (!channel) {
     return (
@@ -20,18 +26,30 @@ export function App() {
     );
   }
 
-  return <Overlay channel={channel} />;
+  return <Overlay channel={channel} config={config} />;
 }
 
-function Overlay({ channel }: { channel: string }) {
+function Overlay({ channel, config }: { channel: string; config: OverlayConfig }) {
   const { streamData, badgeMap } = useStreamData(channel);
-  const { messages } = useChat(channel, badgeMap);
+  const { client } = useTmiClient(channel);
+  const { messages } = useChat(client, badgeMap, channel, config.maxMessages);
+  const { alert } = useAlerts(client);
+  const thirdPartyEmotes = useThirdPartyEmotes(channel);
 
   return (
     <div className="w-screen h-screen">
-      <Watermark />
-      <StreamInfo streamData={streamData} />
-      <ChatBox messages={messages} />
+      {!config.hideWatermark && <Watermark />}
+      {!config.hideInfo && <StreamInfo streamData={streamData} />}
+      <AlertOverlay alert={alert} accent={config.accent} />
+      {!config.hideChat && (
+        <ChatBox
+          messages={messages}
+          thirdPartyEmotes={thirdPartyEmotes}
+          position={config.chatPosition}
+          fontScale={config.fontScale}
+          accent={config.accent}
+        />
+      )}
     </div>
   );
 }
