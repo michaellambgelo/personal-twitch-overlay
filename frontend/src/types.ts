@@ -28,3 +28,18 @@ export interface StreamData {
 }
 
 export type BadgeMap = Record<string, Record<string, string>>;
+
+export type AlertKind = 'sub' | 'resub' | 'subgift' | 'raid' | 'cheer';
+
+export interface AlertEvent {
+  id: string;
+  kind: AlertKind;
+  user: string;
+  /** User-supplied message (resub/cheer), when present. */
+  message?: string;
+  /** Bits (cheer), raider count (raid), or gifted-sub count (subgift). */
+  amount?: number;
+  /** Months (resub) or sub tier label, when relevant. */
+  detail?: string;
+  timestamp: number;
+}

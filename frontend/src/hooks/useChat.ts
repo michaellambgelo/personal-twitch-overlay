@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import tmi from 'tmi.js';
+import type tmi from 'tmi.js';
 import type { ChatMessage, EmoteInstance, BadgeInstance, BadgeMap } from '../types';
 
 const MAX_MESSAGES = 50;
@@ -31,9 +31,8 @@ function parseBadges(
   return badges;
 }
 
-export function useChat(channel: string, badgeMap: BadgeMap) {
+export function useChat(client: tmi.Client | null, badgeMap: BadgeMap) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [connected, setConnected] = useState(false);
   const badgeMapRef = useRef(badgeMap);
   badgeMapRef.current = badgeMap;
 
@@ -54,15 +53,9 @@ export function useChat(channel: string, badgeMap: BadgeMap) {
   }, []);
 
   useEffect(() => {
-    const client = new tmi.Client({
-      connection: { reconnect: true, secure: true },
-      channels: [channel],
-    });
+    if (!client) return;
 
-    client.on('connected', () => setConnected(true));
-    client.on('disconnected', () => setConnected(false));
-
-    client.on('message', (_channel, userstate, text, self) => {
+    const onMessage: tmi.Events['message'] = (_channel, userstate, text, self) => {
       if (self) return;
       const username = userstate['display-name'] || userstate.username || 'anonymous';
       addMessage({
@@ -75,23 +68,31 @@ export function useChat(channel: string, badgeMap: BadgeMap) {
         text,
         timestamp: Date.now(),
       });
-    });
+    };
 
     // Moderation sync — keep the overlay clear of removed content
-    client.on('messagedeleted', (_channel, _username, _deletedMessage, userstate) => {
+    const onDeleted: tmi.Events['messagedeleted'] = (_channel, _username, _deletedMessage, userstate) => {
       const targetId = userstate['target-msg-id'];
       if (targetId) removeById(targetId);
-    });
-    client.on('timeout', (_channel, username) => removeByUser(username));
-    client.on('ban', (_channel, username) => removeByUser(username));
-    client.on('clearchat', () => setMessages([]));
+    };
+    const onTimeout: tmi.Events['timeout'] = (_channel, username) => removeByUser(username);
+    const onBan: tmi.Events['ban'] = (_channel, username) => removeByUser(username);
+    const onClear: tmi.Events['clearchat'] = () => setMessages([]);
 
-    client.connect().catch(() => {});
+    client.on('message', onMessage);
+    client.on('messagedeleted', onDeleted);
+    client.on('timeout', onTimeout);
+    client.on('ban', onBan);
+    client.on('clearchat', onClear);
 
     return () => {
-      client.disconnect().catch(() => {});
+      client.removeListener('message', onMessage);
+      client.removeListener('messagedeleted', onDeleted);
+      client.removeListener('timeout', onTimeout);
+      client.removeListener('ban', onBan);
+      client.removeListener('clearchat', onClear);
     };
-  }, [channel, addMessage, removeById, removeByUser]);
+  }, [client, addMessage, removeById, removeByUser]);
 
-  return { messages, connected };
+  return { messages };
 }

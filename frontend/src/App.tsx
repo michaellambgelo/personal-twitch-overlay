@@ -1,7 +1,10 @@
 import { useStreamData } from './hooks/useStreamData';
+import { useTmiClient } from './hooks/useTmiClient';
 import { useChat } from './hooks/useChat';
+import { useAlerts } from './hooks/useAlerts';
 import { ChatBox } from './components/ChatBox';
 import { StreamInfo } from './components/StreamInfo';
+import { AlertOverlay } from './components/AlertOverlay';
 import { Watermark } from './components/Watermark';
 
 const DEFAULT_CHANNEL = import.meta.env.VITE_CHANNEL || '';
@@ -25,12 +28,15 @@ export function App() {
 
 function Overlay({ channel }: { channel: string }) {
   const { streamData, badgeMap } = useStreamData(channel);
-  const { messages } = useChat(channel, badgeMap);
+  const { client } = useTmiClient(channel);
+  const { messages } = useChat(client, badgeMap);
+  const { alert } = useAlerts(client);
 
   return (
     <div className="w-screen h-screen">
       <Watermark />
       <StreamInfo streamData={streamData} />
+      <AlertOverlay alert={alert} />
       <ChatBox messages={messages} />
     </div>
   );
