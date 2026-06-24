@@ -4,6 +4,13 @@ import type { ChatMessage, EmoteInstance, BadgeInstance, BadgeMap } from '../typ
 
 const MAX_MESSAGES = 50;
 
+// Common chat bots whose output is noise on an overlay.
+const BOT_USERNAMES = new Set(['nightbot', 'streamelements', 'streamlabs', 'moobot', 'soundalerts']);
+
+function isBotOrCommand(usernameLower: string, text: string): boolean {
+  return text.startsWith('!') || BOT_USERNAMES.has(usernameLower);
+}
+
 function parseEmotes(emotesTag: Record<string, string[]> | undefined): EmoteInstance[] {
   if (!emotesTag) return [];
   const emotes: EmoteInstance[] = [];
@@ -31,10 +38,12 @@ function parseBadges(
   return badges;
 }
 
-export function useChat(client: tmi.Client | null, badgeMap: BadgeMap) {
+export function useChat(client: tmi.Client | null, badgeMap: BadgeMap, channel: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const badgeMapRef = useRef(badgeMap);
   badgeMapRef.current = badgeMap;
+  const mentionRef = useRef(`@${channel.toLowerCase()}`);
+  mentionRef.current = `@${channel.toLowerCase()}`;
 
   const addMessage = useCallback((msg: ChatMessage) => {
     setMessages(prev => {
@@ -58,15 +67,20 @@ export function useChat(client: tmi.Client | null, badgeMap: BadgeMap) {
     const onMessage: tmi.Events['message'] = (_channel, userstate, text, self) => {
       if (self) return;
       const username = userstate['display-name'] || userstate.username || 'anonymous';
+      const usernameLower = (userstate.username || username).toLowerCase();
+      if (isBotOrCommand(usernameLower, text)) return;
       addMessage({
         id: userstate.id || crypto.randomUUID(),
         username,
-        usernameLower: (userstate.username || username).toLowerCase(),
+        usernameLower,
         color: userstate.color || '#ffffff',
         badges: parseBadges(userstate.badges as Record<string, string> | undefined, badgeMapRef.current),
         emotes: parseEmotes(userstate.emotes as Record<string, string[]> | undefined),
         text,
         timestamp: Date.now(),
+        firstMessage: userstate['first-msg'] === true,
+        isAction: userstate['message-type'] === 'action',
+        mentioned: text.toLowerCase().includes(mentionRef.current),
       });
     };
 

@@ -1,19 +1,37 @@
 import { useEffect, useRef } from 'react';
-import type { ChatMessage, EmoteInstance } from '../types';
+import type { ChatMessage, EmoteInstance, ThirdPartyEmoteMap } from '../types';
 
 const EMOTE_CDN = 'https://static-cdn.jtvnw.net/emoticons/v2';
 
-function renderMessageContent(text: string, emotes: EmoteInstance[]) {
-  if (emotes.length === 0) return <span>{text}</span>;
+// Replace any word that matches a 3rd-party (BTTV/FFZ/7TV) emote name with its image.
+function renderText(text: string, thirdParty: ThirdPartyEmoteMap, keyPrefix: string) {
+  if (!text) return null;
+  const tokens = text.split(/(\s+)/);
+  return tokens.map((tok, i) => {
+    const url = thirdParty[tok];
+    if (url) {
+      return (
+        <img
+          key={`${keyPrefix}-${i}`}
+          src={url}
+          alt={tok}
+          className="inline-block h-6 align-middle mx-0.5"
+        />
+      );
+    }
+    return <span key={`${keyPrefix}-${i}`}>{tok}</span>;
+  });
+}
+
+function renderMessageContent(text: string, emotes: EmoteInstance[], thirdParty: ThirdPartyEmoteMap) {
+  if (emotes.length === 0) return <>{renderText(text, thirdParty, 't')}</>;
 
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
 
   for (const emote of emotes) {
     if (emote.start > lastIndex) {
-      parts.push(
-        <span key={`t-${lastIndex}`}>{text.slice(lastIndex, emote.start)}</span>
-      );
+      parts.push(...(renderText(text.slice(lastIndex, emote.start), thirdParty, `t-${lastIndex}`) ?? []));
     }
     parts.push(
       <img
@@ -27,7 +45,7 @@ function renderMessageContent(text: string, emotes: EmoteInstance[]) {
   }
 
   if (lastIndex < text.length) {
-    parts.push(<span key={`t-${lastIndex}`}>{text.slice(lastIndex)}</span>);
+    parts.push(...(renderText(text.slice(lastIndex), thirdParty, `t-${lastIndex}`) ?? []));
   }
 
   return <>{parts}</>;
@@ -35,9 +53,10 @@ function renderMessageContent(text: string, emotes: EmoteInstance[]) {
 
 interface Props {
   messages: ChatMessage[];
+  thirdPartyEmotes: ThirdPartyEmoteMap;
 }
 
-export function ChatBox({ messages }: Props) {
+export function ChatBox({ messages, thirdPartyEmotes }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,13 +69,21 @@ export function ChatBox({ messages }: Props) {
         {messages.map((msg, i) => {
           const age = messages.length - 1 - i;
           const opacity = age > 40 ? 0.3 : age > 25 ? 0.5 : age > 10 ? 0.7 : 1;
+          const rowClass = [
+            'text-sm leading-relaxed break-words rounded px-1 -mx-1',
+            msg.mentioned ? 'bg-purple-500/25' : '',
+            msg.firstMessage ? 'ring-1 ring-green-400/60' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
 
           return (
-            <div
-              key={msg.id}
-              className="text-sm leading-relaxed break-words"
-              style={{ opacity }}
-            >
+            <div key={msg.id} className={rowClass} style={{ opacity }}>
+              {msg.firstMessage && (
+                <span className="text-[10px] uppercase tracking-wide text-green-400 mr-1 align-middle">
+                  first
+                </span>
+              )}
               {msg.badges.map((badge, bi) => (
                 <img
                   key={bi}
@@ -68,9 +95,12 @@ export function ChatBox({ messages }: Props) {
               <span className="font-semibold" style={{ color: msg.color }}>
                 {msg.username}
               </span>
-              <span className="text-white/60 mx-1">:</span>
-              <span className="text-white">
-                {renderMessageContent(msg.text, msg.emotes)}
+              {!msg.isAction && <span className="text-white/60 mx-1">:</span>}{' '}
+              <span
+                className={msg.isAction ? 'italic' : 'text-white'}
+                style={msg.isAction ? { color: msg.color } : undefined}
+              >
+                {renderMessageContent(msg.text, msg.emotes, thirdPartyEmotes)}
               </span>
             </div>
           );

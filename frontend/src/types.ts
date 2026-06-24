@@ -7,7 +7,16 @@ export interface ChatMessage {
   emotes: EmoteInstance[];
   text: string;
   timestamp: number;
+  /** First-ever message from this user in the channel. */
+  firstMessage: boolean;
+  /** Sent as a `/me` action — render italic in the user's color. */
+  isAction: boolean;
+  /** Mentions the broadcaster (@channel). */
+  mentioned: boolean;
 }
+
+/** Third-party (BTTV/FFZ/7TV) emotes, keyed by exact emote word. */
+export type ThirdPartyEmoteMap = Record<string, string>;
 
 export interface BadgeInstance {
   imageUrl: string;

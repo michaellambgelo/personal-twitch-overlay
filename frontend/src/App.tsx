@@ -2,6 +2,7 @@ import { useStreamData } from './hooks/useStreamData';
 import { useTmiClient } from './hooks/useTmiClient';
 import { useChat } from './hooks/useChat';
 import { useAlerts } from './hooks/useAlerts';
+import { useThirdPartyEmotes } from './hooks/useThirdPartyEmotes';
 import { ChatBox } from './components/ChatBox';
 import { StreamInfo } from './components/StreamInfo';
 import { AlertOverlay } from './components/AlertOverlay';
@@ -29,15 +30,16 @@ export function App() {
 function Overlay({ channel }: { channel: string }) {
   const { streamData, badgeMap } = useStreamData(channel);
   const { client } = useTmiClient(channel);
-  const { messages } = useChat(client, badgeMap);
+  const { messages } = useChat(client, badgeMap, channel);
   const { alert } = useAlerts(client);
+  const thirdPartyEmotes = useThirdPartyEmotes(channel);
 
   return (
     <div className="w-screen h-screen">
       <Watermark />
       <StreamInfo streamData={streamData} />
       <AlertOverlay alert={alert} />
-      <ChatBox messages={messages} />
+      <ChatBox messages={messages} thirdPartyEmotes={thirdPartyEmotes} />
     </div>
   );
 }
