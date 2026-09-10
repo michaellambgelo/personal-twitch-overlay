@@ -1,0 +1,30 @@
+{
+  "findings": [
+    {
+      "category": "security",
+      "severity": "error",
+      "title": "js-yaml 4.3.1 has high-severity ReDoS vulnerability (GHSA-2883-xcg3-v3hh)",
+      "detail": "frontend/package-lock.json pins js-yaml at 4.3.1 (dev transitive dep). CVE range >=4.0.0 <4.3.2: maxTotalMergeKeys does not limit CPU use for empty merge sources (CVSS 7.5). Fix: bump to 4.3.2 via npm audit fix in frontend/.",
+      "actionable": true,
+      "suggested_fix": "cd frontend && npm install && npm audit fix"
+    },
+    {
+      "category": "security",
+      "severity": "warn",
+      "title": "wrangler/miniflare pulls in sharp <0.35.4 with heap-buffer-overflow (GHSA-rgj7-g3m4-5g8c)",
+      "detail": "worker/package-lock.json: wrangler >= 4.16.0 bundles miniflare which bundles sharp <0.35.4 (libheif heap-buffer-overflow, high severity). npm audit reports the fix version as wrangler 4.15.2, which is a downgrade — unsafe to apply automatically. Recommend monitoring for a wrangler patch that upgrades the bundled sharp to >=0.35.4.",
+      "actionable": false,
+      "suggested_fix": "Monitor wrangler releases for a build that bundles sharp >=0.35.4; do not downgrade wrangler"
+    },
+    {
+      "category": "outdated_dep",
+      "severity": "warn",
+      "title": "React 18.2.0 → 19.3.0 (major version behind)",
+      "detail": "frontend/package.json specifies react and react-dom ^18.2.0; latest is 19.3.0. Major version bump requires manual migration (new JSX transform, Concurrent Features API changes). Not suitable for automated fix.",
+      "actionable": false,
+      "suggested_fix": "Manually upgrade react and react-dom to ^19 following the React 19 migration guide"
+    }
+  ],
+  "action": "audit_only",
+  "pr_url": null
+}
