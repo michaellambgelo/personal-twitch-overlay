@@ -1,0 +1,30 @@
+{
+  "findings": [
+    {
+      "category": "security",
+      "severity": "error",
+      "title": "wrangler (worker) contains high-severity vulnerability via miniflare/sharp",
+      "detail": "wrangler@^4.37.0 in worker/package.json falls in the vulnerable range 4.16.0–4.130.0 (GHSA affecting miniflare and sharp transitively). Latest safe version is 4.136.3. fixAvailable: true.",
+      "actionable": true,
+      "suggested_fix": "Bump wrangler in worker/package.json from ^4.37.0 to ^4.136.3 and run npm install"
+    },
+    {
+      "category": "security",
+      "severity": "warn",
+      "title": "js-yaml <4.3.2 in frontend devDependencies (GHSA-2883-xcg3-v3hh)",
+      "detail": "js-yaml versions >=4.0.0 <4.3.2 are vulnerable to CPU exhaustion via empty merge sources (CVE-2025, CVSS 7.5). A transitive devDependency in frontend/. fixAvailable: true.",
+      "actionable": true,
+      "suggested_fix": "Run npm audit fix inside frontend/ to update js-yaml to >=4.3.2"
+    },
+    {
+      "category": "outdated_dep",
+      "severity": "warn",
+      "title": "react and react-dom are one major version behind (18.x vs 19.x)",
+      "detail": "frontend/package.json specifies react@^18.2.0 and react-dom@^18.2.0. Latest major is 19.3.0. The current semver range will not auto-update across the major boundary.",
+      "actionable": true,
+      "suggested_fix": "Update react and react-dom to ^19.3.0 in frontend/package.json and run npm install, then validate the build"
+    }
+  ],
+  "action": "audit_only",
+  "pr_url": null
+}
