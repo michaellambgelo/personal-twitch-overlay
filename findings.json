@@ -25,6 +25,6 @@
       "suggested_fix": "Update react and react-dom to ^19.3.0 in frontend/package.json and run npm install, then validate the build"
     }
   ],
-  "action": "audit_only",
-  "pr_url": null
+  "action": "pr_opened",
+  "pr_url": "https://github.com/michaellambgelo/personal-twitch-overlay/pull/7"
 }
