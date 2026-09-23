@@ -33,6 +33,6 @@
       "suggested_fix": "Add a test runner (e.g. vitest) and write unit tests for at least the hooks in frontend/src/hooks/"
     }
   ],
-  "action": "audit_only",
-  "pr_url": null
+  "action": "pr_opened",
+  "pr_url": "https://github.com/michaellambgelo/personal-twitch-overlay/pull/8"
 }
