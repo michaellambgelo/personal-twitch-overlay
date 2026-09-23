@@ -1,0 +1,38 @@
+{
+  "findings": [
+    {
+      "category": "security",
+      "severity": "error",
+      "title": "High-severity js-yaml vulnerability in frontend (GHSA-2883-xcg3-v3hh)",
+      "detail": "frontend/node_modules/js-yaml@4.3.1 is vulnerable to ReDoS/CPU exhaustion via empty merge sources (CVE GHSA-2883-xcg3-v3hh, CVSS 7.5). It is an indirect dependency via eslint -> @eslint/eslintrc -> js-yaml. Fix is available by bumping js-yaml to >=4.3.2.",
+      "actionable": true,
+      "suggested_fix": "Run `npm audit fix` in the frontend/ directory to bump js-yaml from 4.3.1 to 4.3.2"
+    },
+    {
+      "category": "security",
+      "severity": "error",
+      "title": "High-severity wrangler vulnerability in worker (via miniflare/sharp)",
+      "detail": "worker/node_modules/wrangler@4.125.0 is in the vulnerable range 4.16.0-4.130.0 (high severity via miniflare/sharp). An open PR #7 is already addressing this by upgrading wrangler to 4.136.3.",
+      "actionable": false,
+      "suggested_fix": "Already addressed in open PR #7: fix(worker): upgrade wrangler to 4.136.3"
+    },
+    {
+      "category": "outdated_dep",
+      "severity": "warn",
+      "title": "react and react-dom are one major version behind (18.x installed, 19.x available)",
+      "detail": "frontend/package.json pins react and react-dom to ^18.2.0 (installed 18.3.1); latest is 19.3.0. React 19 includes breaking changes requiring migration.",
+      "actionable": true,
+      "suggested_fix": "Upgrade react and react-dom to ^19.0.0 in frontend/package.json and update associated @types/react and @types/react-dom"
+    },
+    {
+      "category": "missing_tests",
+      "severity": "warn",
+      "title": "No test files exist in the repository",
+      "detail": "The frontend has multiple source files (App.tsx, hooks/*.ts, components/*.tsx) but zero test files (*.test.ts, *.spec.ts). No test script is defined in frontend/package.json.",
+      "actionable": false,
+      "suggested_fix": "Add a test runner (e.g. vitest) and write unit tests for at least the hooks in frontend/src/hooks/"
+    }
+  ],
+  "action": "pr_opened",
+  "pr_url": "https://github.com/michaellambgelo/personal-twitch-overlay/pull/8"
+}
