@@ -29,7 +29,7 @@ export function StreamInfo({ streamData }: Props) {
 
   return (
     <div className="fixed top-4 left-4 flex flex-col gap-1 items-start text-white font-mono">
-      <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 text-sm">
+      <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xs rounded-full px-4 py-2 text-sm">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           LIVE
@@ -40,7 +40,7 @@ export function StreamInfo({ streamData }: Props) {
         <span>{streamData.viewerCount.toLocaleString()} viewers</span>
       </div>
       {(streamData.gameName || streamData.title) && (
-        <div className="flex items-baseline gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-1 text-xs max-w-md">
+        <div className="flex items-baseline gap-2 bg-black/50 backdrop-blur-xs rounded-full px-4 py-1 text-xs max-w-md">
           {streamData.gameName && <span className="font-semibold whitespace-nowrap">{streamData.gameName}</span>}
           {streamData.gameName && streamData.title && <span className="text-white/40">·</span>}
           {streamData.title && <span className="text-white/70 truncate">{streamData.title}</span>}

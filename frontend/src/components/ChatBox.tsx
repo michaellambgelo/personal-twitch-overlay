@@ -72,7 +72,7 @@ export function ChatBox({ messages, thirdPartyEmotes, position = 'br', fontScale
       className={`fixed ${chatPositionClasses(position)} w-96 max-h-[60vh] flex flex-col-reverse`}
       style={{ fontSize: `calc(0.875rem * ${fontScale})` }}
     >
-      <div className="overflow-y-auto space-y-1 p-3 bg-black/40 backdrop-blur-sm rounded-lg">
+      <div className="overflow-y-auto space-y-1 p-3 bg-black/40 backdrop-blur-xs rounded-lg">
         {messages.map((msg, i) => {
           const age = messages.length - 1 - i;
           const opacity = age > 40 ? 0.3 : age > 25 ? 0.5 : age > 10 ? 0.7 : 1;
@@ -81,7 +81,7 @@ export function ChatBox({ messages, thirdPartyEmotes, position = 'br', fontScale
           if (msg.firstMessage) rowStyle.boxShadow = `inset 0 0 0 1px ${withAlpha(accent, 0.6)}`;
 
           return (
-            <div key={msg.id} className="leading-relaxed break-words rounded px-1 -mx-1" style={rowStyle}>
+            <div key={msg.id} className="leading-relaxed wrap-break-word rounded-sm px-1 -mx-1" style={rowStyle}>
               {msg.firstMessage && (
                 <span
                   className="text-[10px] uppercase tracking-wide mr-1 align-middle"

@@ -39,7 +39,7 @@ export function AlertOverlay({ alert, accent = '#a855f7' }: Props) {
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-10">
       <div
         key={alert.id}
-        className="animate-alert-in flex flex-col items-center gap-1 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-3 text-white text-center shadow-lg ring-2"
+        className="animate-alert-in flex flex-col items-center gap-1 bg-black/70 backdrop-blur-xs rounded-xl px-6 py-3 text-white text-center shadow-lg ring-2"
         style={{ '--tw-ring-color': accent } as React.CSSProperties}
       >
         <span className="text-base font-semibold">
@@ -47,7 +47,7 @@ export function AlertOverlay({ alert, accent = '#a855f7' }: Props) {
           {headline(alert)}
         </span>
         {alert.message && alert.kind !== 'subgift' && (
-          <span className="text-sm text-white/70 max-w-sm break-words">{alert.message}</span>
+          <span className="text-sm text-white/70 max-w-sm wrap-break-word">{alert.message}</span>
         )}
       </div>
     </div>
