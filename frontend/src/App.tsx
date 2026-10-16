@@ -20,7 +20,7 @@ export function App() {
     return (
       <div className="flex items-center justify-center h-screen text-white bg-gray-900">
         <p className="text-lg font-mono">
-          Add <code className="bg-gray-800 px-2 py-1 rounded">?channel=your_channel</code> to the URL
+          Add <code className="bg-gray-800 px-2 py-1 rounded-sm">?channel=your_channel</code> to the URL
         </p>
       </div>
     );

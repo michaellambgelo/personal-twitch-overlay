@@ -198,6 +198,6 @@ npx wrangler secret put TWITCH_CLIENT_SECRET
 ## Tech stack
 
 - React 18, TypeScript 5.5 (strict mode), Vite 8
-- Tailwind CSS 3 (transparent `body` background for OBS compositing)
+- Tailwind CSS 4 (transparent `body` background for OBS compositing)
 - `tmi.js` 1.8 for Twitch IRC chat
 - Cloudflare Workers + Wrangler 4 for the Helix API proxy
