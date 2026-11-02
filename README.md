@@ -68,7 +68,7 @@ Two independently deployed pieces:
 
 | Part | Stack | Deploy target |
 |------|-------|---------------|
-| `frontend/` | React 18 + TypeScript + Vite + Tailwind | GitHub Pages |
+| `frontend/` | React 19 + TypeScript + Vite + Tailwind | GitHub Pages |
 | `worker/` | Cloudflare Worker (plain JS) | Cloudflare Workers |
 
 Data flows along these paths:
@@ -197,7 +197,7 @@ npx wrangler secret put TWITCH_CLIENT_SECRET
 
 ## Tech stack
 
-- React 18, TypeScript 5.5 (strict mode), Vite 8
+- React 19, TypeScript 5.5 (strict mode), Vite 8
 - Tailwind CSS 3 (transparent `body` background for OBS compositing)
 - `tmi.js` 1.8 for Twitch IRC chat
 - Cloudflare Workers + Wrangler 4 for the Helix API proxy
